@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var statusTextView: TextView
     private lateinit var permissionButton: Button
     private lateinit var clearButton: Button
     private lateinit var notificationsRecyclerView: RecyclerView
@@ -35,9 +34,9 @@ class MainActivity : AppCompatActivity() {
                     val appName = intent.getStringExtra(NotificationService.EXTRA_APP_NAME) ?: getAppNameFromPackage(packageName)
                     val title = intent.getStringExtra(NotificationService.EXTRA_TITLE)
                     val fullContent = intent.getStringExtra(NotificationService.EXTRA_CONTENT)
-                    // Use first 100 characters as short content for initial display
-                    val shortContent = if (fullContent != null && fullContent.length > 100) {
-                        fullContent.substring(0, 100) + "..."
+                    // Use first 50 characters as short content for initial display
+                    val shortContent = if (fullContent != null && fullContent.length > 50) {
+                        fullContent.substring(0, 50) + "..."
                     } else {
                         fullContent
                     }
@@ -69,7 +68,6 @@ class MainActivity : AppCompatActivity() {
         }
         
         // Initialize views
-        statusTextView = findViewById(R.id.statusTextView)
         permissionButton = findViewById(R.id.permissionButton)
         clearButton = findViewById(R.id.clearButton)
         notificationsRecyclerView = findViewById(R.id.notificationsRecyclerView)
@@ -96,6 +94,9 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Notifications cleared", Toast.LENGTH_SHORT).show()
         }
         
+        // Add test notification for testing rendering effects
+        addTestNotification()
+        
         // Register broadcast receiver
         val intentFilter = IntentFilter().apply {
             addAction(NotificationService.NOTIFICATION_POSTED)
@@ -121,10 +122,10 @@ class MainActivity : AppCompatActivity() {
     
     private fun updatePermissionStatus() {
         if (isNotificationServiceEnabled()) {
-            statusTextView.text = getString(R.string.permission_granted)
+            permissionButton.text = getString(R.string.permission_granted)
             permissionButton.isEnabled = false
         } else {
-            statusTextView.text = getString(R.string.permission_not_granted)
+            permissionButton.text = getString(R.string.grant_permission)
             permissionButton.isEnabled = true
         }
     }
@@ -152,4 +153,21 @@ class MainActivity : AppCompatActivity() {
             packageName // Return package name if app name cannot be found
         }
     }
+    
+    private fun addTestNotification() {
+        val longContent = "This is a very long notification content that should definitely be longer than 50 characters to test the expand button functionality. It contains multiple sentences and should trigger the expand button to appear when displayed in the notification list."
+        val shortContent = longContent.substring(0, 50) + "..."
+        
+        val testNotification = NotificationData(
+            packageName = "com.example.test",
+            appName = "Test App",
+            title = "Test Notification",
+            content = shortContent,
+            fullContent = longContent,
+            timestamp = System.currentTimeMillis()
+        )
+        
+        notificationAdapter.addNotification(testNotification)
+    }
+
 }

@@ -72,22 +72,23 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             
             // Show/hide and set content
             if (!notification.content.isNullOrEmpty()) {
-                contentTextView.text = notification.content
-                contentTextView.visibility = View.VISIBLE
-                
                 // Show expand button only if there's more content to show
                 val hasMoreContent = !notification.fullContent.isNullOrBlank() && 
                     notification.fullContent != notification.content
+                
                 if (hasMoreContent) {
-                    expandButton.visibility = View.VISIBLE
-                    setupExpandButton(notification)
-                    // Adjust contentTextView constraints to account for expand button
-                    adjustContentConstraints(true)
-                } else {
+                    // Show truncated content with clickable "...more" at the end
+                    contentTextView.text = "${notification.content}...more"
+                    setupContentClickListener(notification)
                     expandButton.visibility = View.GONE
-                    // Adjust contentTextView constraints to span full width
+                    adjustContentConstraints(false)
+                } else {
+                    contentTextView.text = notification.content
+                    contentTextView.setOnClickListener(null)
+                    expandButton.visibility = View.GONE
                     adjustContentConstraints(false)
                 }
+                contentTextView.visibility = View.VISIBLE
             } else {
                 contentTextView.visibility = View.GONE
                 expandButton.visibility = View.GONE
@@ -97,11 +98,22 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             // Reset expansion state
             isExpanded = false
             fullContentTextView.visibility = View.GONE
-            expandButton.text = "▼"
+            expandButton.text = "Show more"
             
             // Package name with status
             val status = if (notification.isRemoved) "[REMOVED] " else ""
             packageNameTextView.text = "$status${notification.packageName}"
+        }
+        
+        private fun setupContentClickListener(notification: NotificationData) {
+            contentTextView.setOnClickListener {
+                isExpanded = !isExpanded
+                if (isExpanded) {
+                    contentTextView.text = notification.fullContent
+                } else {
+                    contentTextView.text = "${notification.content}...more"
+                }
+            }
         }
         
         private fun setupExpandButton(notification: NotificationData) {
@@ -110,10 +122,10 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
                 if (isExpanded) {
                     fullContentTextView.text = notification.fullContent
                     fullContentTextView.visibility = View.VISIBLE
-                    expandButton.text = "▲"
+                    expandButton.text = "Show less"
                 } else {
                     fullContentTextView.visibility = View.GONE
-                    expandButton.text = "▼"
+                    expandButton.text = "Show more"
                 }
             }
         }
@@ -123,7 +135,9 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             if (hasExpandButton) {
                 layoutParams.endToEnd = ConstraintLayout.LayoutParams.UNSET
                 layoutParams.endToStart = R.id.expandButton
-                layoutParams.marginEnd = 24 // 8dp margin in pixels (approximately)
+                // Convert 8dp to pixels
+                val density = itemView.context.resources.displayMetrics.density
+                layoutParams.marginEnd = (8 * density).toInt()
             } else {
                 layoutParams.endToStart = ConstraintLayout.LayoutParams.UNSET
                 layoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID

@@ -51,9 +51,8 @@
             android:layout_height="wrap_content"
             android:textSize="13sp"
             android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
             android:visibility="gone"
-            app:layout_constraintEnd_toStartOf="@+id/expandButton"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
 
@@ -62,10 +61,13 @@
             android:layout_width="wrap_content"
             android:layout_height="32dp"
             android:layout_marginTop="4dp"
-            android:text="▼"
-            android:textSize="12sp"
+            android:text="Show more"
+            android:textSize="10sp"
+            android:textColor="#1976D2"
             android:background="?android:attr/selectableItemBackground"
-            android:minWidth="32dp"
+            android:minWidth="80dp"
+            android:paddingHorizontal="12dp"
+            android:textAllCaps="false"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@+id/titleTextView"
             app:layout_constraintEnd_toEndOf="parent" />
