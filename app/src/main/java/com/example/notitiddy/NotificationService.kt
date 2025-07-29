@@ -1,6 +1,7 @@
 package com.example.notitiddy
 
 import android.app.Notification
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -30,6 +31,7 @@ class NotificationService : NotificationListenerService() {
         const val EXTRA_APP_NAME = "extra_app_name"
         const val EXTRA_TITLE = "extra_title"
         const val EXTRA_CONTENT = "extra_content"
+        const val EXTRA_CONTENT_INTENT = "extra_content_intent"
     }
 
     override fun onCreate() {
@@ -62,6 +64,9 @@ class NotificationService : NotificationListenerService() {
         // Get the most complete content available
         val fullContent = bigText ?: textLines?.joinToString("\n") ?: text
         
+        // Get the content intent for direct navigation
+        val contentIntent = notification.contentIntent
+        
         Log.d(TAG, "Notification posted: $packageName, $title, $text")
         
         // Store notification in database
@@ -86,6 +91,7 @@ class NotificationService : NotificationListenerService() {
             putExtra(EXTRA_APP_NAME, appName)
             putExtra(EXTRA_TITLE, title)
             putExtra(EXTRA_CONTENT, fullContent)
+            putExtra(EXTRA_CONTENT_INTENT, contentIntent)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }

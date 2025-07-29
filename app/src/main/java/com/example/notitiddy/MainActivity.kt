@@ -1,5 +1,6 @@
 package com.example.notitiddy
 
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                     val appName = intent.getStringExtra(NotificationService.EXTRA_APP_NAME) ?: getAppNameFromPackage(packageName)
                     val title = intent.getStringExtra(NotificationService.EXTRA_TITLE)
                     val fullContent = intent.getStringExtra(NotificationService.EXTRA_CONTENT)
+                    val contentIntent = intent.getParcelableExtra<PendingIntent>(NotificationService.EXTRA_CONTENT_INTENT)
                     // Use first 50 characters as short content for initial display
                     val shortContent = if (fullContent != null && fullContent.length > 50) {
                         fullContent.substring(0, 50) + "..."
@@ -46,7 +48,8 @@ class MainActivity : AppCompatActivity() {
                         title = title,
                         content = shortContent,
                         fullContent = fullContent,
-                        timestamp = System.currentTimeMillis()
+                        timestamp = System.currentTimeMillis(),
+                        contentIntent = contentIntent
                     )
                     notificationAdapter.addNotification(notification)
                 }
