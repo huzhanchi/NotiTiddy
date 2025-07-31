@@ -36,9 +36,9 @@
             android:id="@+id/timestampTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:textSize="12sp"
             android:textStyle="italic"
-            android:layout_marginTop="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/appIconImageView"
             app:layout_constraintTop_toBottomOf="@+id/appNameTextView" />
@@ -47,9 +47,9 @@
             android:id="@+id/titleTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:layout_marginTop="4dp"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/appIconImageView"
@@ -59,28 +59,12 @@
             android:id="@+id/contentTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="13sp"
             android:layout_marginTop="4dp"
+            android:textSize="13sp"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/appIconImageView"
             app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
-
-        <Button
-            android:id="@+id/expandButton"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:layout_marginTop="4dp"
-            android:text="Show more"
-            android:textSize="10sp"
-            android:textColor="#1976D2"
-            android:background="?android:attr/selectableItemBackground"
-            android:minWidth="80dp"
-            android:paddingHorizontal="12dp"
-            android:textAllCaps="false"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@+id/titleTextView"
-            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/fullContentTextView"
@@ -89,17 +73,17 @@
             android:layout_marginTop="4dp"
             android:textSize="13sp"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@+id/contentTextView"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/appIconImageView"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/contentTextView" />
 
         <TextView
             android:id="@+id/packageNameTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="#666666"
             android:layout_marginTop="8dp"
+            android:textColor="#666666"
+            android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/appIconImageView"
             app:layout_constraintTop_toBottomOf="@+id/fullContentTextView" />

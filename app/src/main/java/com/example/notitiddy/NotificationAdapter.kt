@@ -7,12 +7,14 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.provider.Settings
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -67,7 +69,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
         private val contentTextView: TextView = itemView.findViewById(R.id.contentTextView)
         private val packageNameTextView: TextView = itemView.findViewById(R.id.packageNameTextView)
         private val fullContentTextView: TextView = itemView.findViewById(R.id.fullContentTextView)
-        private val expandButton: Button = itemView.findViewById(R.id.expandButton)
+        // expandButton removed - using clickable "...more" text instead
         
         private var isExpanded = false
 
@@ -101,27 +103,29 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
                 
                 if (hasMoreContent) {
                     // Show truncated content with clickable "...more" at the end
-                    contentTextView.text = "${notification.content}...more"
+                    val fullText = "${notification.content}...more"
+                    val spannableString = SpannableString(fullText)
+                    val moreStartIndex = fullText.length - 7 // "...more" is 7 characters
+                    spannableString.setSpan(
+                        ForegroundColorSpan(Color.BLUE),
+                        moreStartIndex,
+                        fullText.length,
+                        SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    contentTextView.text = spannableString
                     setupContentClickListener(notification)
-                    expandButton.visibility = View.GONE
-                    adjustContentConstraints(false)
                 } else {
                     contentTextView.text = notification.content
                     contentTextView.setOnClickListener(null)
-                    expandButton.visibility = View.GONE
-                    adjustContentConstraints(false)
                 }
                 contentTextView.visibility = View.VISIBLE
             } else {
                 contentTextView.visibility = View.GONE
-                expandButton.visibility = View.GONE
-                adjustContentConstraints(false)
             }
             
             // Reset expansion state
             isExpanded = false
             fullContentTextView.visibility = View.GONE
-            expandButton.text = "Show more"
             
             // Package name with status
             val status = if (notification.isRemoved) "[REMOVED] " else ""
@@ -144,35 +148,8 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             }
         }
         
-        private fun setupExpandButton(notification: NotificationData) {
-            expandButton.setOnClickListener {
-                isExpanded = !isExpanded
-                if (isExpanded) {
-                    fullContentTextView.text = notification.fullContent
-                    fullContentTextView.visibility = View.VISIBLE
-                    expandButton.text = "Show less"
-                } else {
-                    fullContentTextView.visibility = View.GONE
-                    expandButton.text = "Show more"
-                }
-            }
-        }
-        
-        private fun adjustContentConstraints(hasExpandButton: Boolean) {
-            val layoutParams = contentTextView.layoutParams as ConstraintLayout.LayoutParams
-            if (hasExpandButton) {
-                layoutParams.endToEnd = ConstraintLayout.LayoutParams.UNSET
-                layoutParams.endToStart = R.id.expandButton
-                // Convert 8dp to pixels
-                val density = itemView.context.resources.displayMetrics.density
-                layoutParams.marginEnd = (8 * density).toInt()
-            } else {
-                layoutParams.endToStart = ConstraintLayout.LayoutParams.UNSET
-                layoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-                layoutParams.marginEnd = 0
-            }
-            contentTextView.layoutParams = layoutParams
-        }
+        // setupExpandButton and adjustContentConstraints methods removed
+        // Now using clickable "...more" text for content expansion
         
         private fun showNotificationDetailDialog(notification: NotificationData) {
             val context = itemView.context
