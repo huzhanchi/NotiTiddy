@@ -10,8 +10,12 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
-import android.widget.Button
-import android.widget.TextView
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.View
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -19,12 +23,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DefaultItemAnimator
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var permissionButton: Button
-    private lateinit var clearButton: Button
     private lateinit var notificationsRecyclerView: RecyclerView
-    private lateinit var notificationAdapter: NotificationAdapter
+    private lateinit var notificationAdapter: GroupedNotificationAdapter
+    private lateinit var headerLayout: LinearLayout
+    private lateinit var searchBarLayout: LinearLayout
+    private lateinit var searchIcon: ImageView
+    private lateinit var backIcon: ImageView
+    private lateinit var searchEditText: EditText
+    private lateinit var clearSearchIcon: ImageView
+    private var isSearchVisible = false
     
     private val notificationReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -71,30 +81,30 @@ class MainActivity : AppCompatActivity() {
         }
         
         // Initialize views
-        permissionButton = findViewById(R.id.permissionButton)
-        clearButton = findViewById(R.id.clearButton)
         notificationsRecyclerView = findViewById(R.id.notificationsRecyclerView)
+        headerLayout = findViewById(R.id.headerLayout)
+        searchBarLayout = findViewById(R.id.searchBarLayout)
+        searchIcon = findViewById(R.id.searchIcon)
+        backIcon = findViewById(R.id.backIcon)
+        searchEditText = findViewById(R.id.searchEditText)
+        clearSearchIcon = findViewById(R.id.clearSearchIcon)
+        
+        // Set up search functionality
+        setupSearchFunctionality()
         
         // Set up RecyclerView
-        notificationAdapter = NotificationAdapter()
+        notificationAdapter = GroupedNotificationAdapter()
         notificationsRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = notificationAdapter
-        }
-        
-        // Set up permission button
-        permissionButton.setOnClickListener {
-            if (!isNotificationServiceEnabled()) {
-                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-            } else {
-                Toast.makeText(this, "Permission already granted", Toast.LENGTH_SHORT).show()
+            
+            // Enable smooth animations for expand/collapse
+            itemAnimator = DefaultItemAnimator().apply {
+                addDuration = 300
+                removeDuration = 300
+                moveDuration = 300
+                changeDuration = 300
             }
-        }
-        
-        // Set up clear button
-        clearButton.setOnClickListener {
-            notificationAdapter.clearNotifications()
-            Toast.makeText(this, "Notifications cleared", Toast.LENGTH_SHORT).show()
         }
         
         // Add test notification for testing rendering effects
@@ -107,30 +117,66 @@ class MainActivity : AppCompatActivity() {
         }
         LocalBroadcastManager.getInstance(this).registerReceiver(notificationReceiver, intentFilter)
         
-        // Update UI based on permission status
-        updatePermissionStatus()
+    }
+    
+    private fun setupSearchFunctionality() {
+        // Initially hide search bar
+        searchBarLayout.visibility = View.GONE
+        
+        // Search icon click listener
+        searchIcon.setOnClickListener {
+            showSearchBar()
+        }
+        
+        // Back icon click listener
+        backIcon.setOnClickListener {
+            hideSearchBar()
+        }
+        
+        // Clear search icon click listener
+        clearSearchIcon.setOnClickListener {
+            searchEditText.text.clear()
+        }
+        
+        // Search text change listener
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterNotifications(s.toString())
+            }
+            
+            override fun afterTextChanged(s: Editable?) {}
+        })
+    }
+    
+    private fun showSearchBar() {
+        isSearchVisible = true
+        headerLayout.visibility = View.GONE
+        searchBarLayout.visibility = View.VISIBLE
+        searchEditText.requestFocus()
+    }
+    
+    private fun hideSearchBar() {
+        isSearchVisible = false
+        searchBarLayout.visibility = View.GONE
+        headerLayout.visibility = View.VISIBLE
+        searchEditText.text.clear()
+        // Reset filter to show all notifications
+        notificationAdapter.filter("")
+    }
+    
+    private fun filterNotifications(query: String) {
+        notificationAdapter.filter(query)
     }
     
     override fun onResume() {
         super.onResume()
-        updatePermissionStatus()
     }
-    
-
     
     override fun onDestroy() {
         super.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(notificationReceiver)
-    }
-    
-    private fun updatePermissionStatus() {
-        if (isNotificationServiceEnabled()) {
-            permissionButton.text = getString(R.string.permission_granted)
-            permissionButton.isEnabled = false
-        } else {
-            permissionButton.text = getString(R.string.grant_permission)
-            permissionButton.isEnabled = true
-        }
     }
     
     private fun isNotificationServiceEnabled(): Boolean {
@@ -158,19 +204,99 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun addTestNotification() {
-        val longContent = "This is a very long notification content that should definitely be longer than 50 characters to test the expand button functionality. It contains multiple sentences and should trigger the expand button to appear when displayed in the notification list."
-        val shortContent = longContent.substring(0, 50) + "..."
+        val currentTime = System.currentTimeMillis()
         
-        val testNotification = NotificationData(
-            packageName = "com.example.test",
-            appName = "Test App",
-            title = "Test Notification",
-            content = shortContent,
-            fullContent = longContent,
-            timestamp = System.currentTimeMillis()
+        // Create multiple test notifications from different apps
+        val testNotifications = listOf(
+            // WhatsApp notifications (3 notifications)
+            NotificationData(
+                packageName = "com.whatsapp",
+                appName = "WhatsApp",
+                title = "John Doe",
+                content = "Hey! Are you free for lunch today? I was thinking we could try that new restaurant downtown.",
+                fullContent = "Hey! Are you free for lunch today? I was thinking we could try that new restaurant downtown. Let me know if you're interested!",
+                timestamp = currentTime - 60000 // 1 minute ago
+            ),
+            NotificationData(
+                packageName = "com.whatsapp",
+                appName = "WhatsApp",
+                title = "Sarah Wilson",
+                content = "Don't forget about the meeting tomorrow at 3 PM. We need to discuss the project timeline and deliverables.",
+                fullContent = "Don't forget about the meeting tomorrow at 3 PM. We need to discuss the project timeline and deliverables. Please bring your notes from last week's discussion.",
+                timestamp = currentTime - 300000 // 5 minutes ago
+            ),
+            NotificationData(
+                packageName = "com.whatsapp",
+                appName = "WhatsApp",
+                title = "Mom",
+                content = "Call me when you get home. Love you! 💕",
+                fullContent = "Call me when you get home. Love you! 💕",
+                timestamp = currentTime - 900000 // 15 minutes ago
+            ),
+            
+            // Gmail notifications (2 notifications)
+            NotificationData(
+                packageName = "com.google.android.gm",
+                appName = "Gmail",
+                title = "Weekly Newsletter",
+                content = "Your weekly tech digest is here! This week: AI breakthroughs, new programming languages, and mobile development trends.",
+                fullContent = "Your weekly tech digest is here! This week: AI breakthroughs, new programming languages, and mobile development trends. Don't miss our exclusive interview with industry leaders about the future of software development.",
+                timestamp = currentTime - 1800000 // 30 minutes ago
+            ),
+            NotificationData(
+                packageName = "com.google.android.gm",
+                appName = "Gmail",
+                title = "Project Update",
+                content = "The latest project milestone has been completed. Please review the attached documents and provide feedback.",
+                fullContent = "The latest project milestone has been completed. Please review the attached documents and provide feedback by end of week. The team has made significant progress on the core features.",
+                timestamp = currentTime - 3600000 // 1 hour ago
+            ),
+            
+            // Slack notifications (2 notifications)
+            NotificationData(
+                packageName = "com.slack",
+                appName = "Slack",
+                title = "#general",
+                content = "@channel: Team lunch today at 12:30 PM in the main conference room. Pizza will be provided!",
+                fullContent = "@channel: Team lunch today at 12:30 PM in the main conference room. Pizza will be provided! Please let us know about any dietary restrictions.",
+                timestamp = currentTime - 7200000 // 2 hours ago
+            ),
+            NotificationData(
+                packageName = "com.slack",
+                appName = "Slack",
+                title = "#development",
+                content = "Code review needed for PR #123. The new authentication system is ready for testing.",
+                fullContent = "Code review needed for PR #123. The new authentication system is ready for testing. Please check the security implementation and performance optimizations.",
+                timestamp = currentTime - 10800000 // 3 hours ago
+            ),
+            
+            // Instagram notification (1 notification)
+            NotificationData(
+                packageName = "com.instagram.android",
+                appName = "Instagram",
+                title = "New followers",
+                content = "alex_photographer and 5 others started following you. Check out their profiles!",
+                fullContent = "alex_photographer and 5 others started following you. Check out their profiles and discover new content!",
+                timestamp = currentTime - 14400000 // 4 hours ago
+            ),
+            
+            // YouTube notification (1 notification)
+            NotificationData(
+                packageName = "com.google.android.youtube",
+                appName = "YouTube",
+                title = "New video from TechChannel",
+                content = "\"10 Android Development Tips That Will Change Your Life\" - Watch the latest tutorial now!",
+                fullContent = "\"10 Android Development Tips That Will Change Your Life\" - Watch the latest tutorial now! Learn advanced techniques for building better apps.",
+                timestamp = currentTime - 18000000 // 5 hours ago
+            )
         )
         
-        notificationAdapter.addNotification(testNotification)
+        // Add all test notifications
+        testNotifications.forEach { notification ->
+            notificationAdapter.addNotification(notification)
+        }
+        
+        Toast.makeText(this, "Added ${testNotifications.size} test notifications from ${testNotifications.map { it.appName }.distinct().size} different apps", Toast.LENGTH_SHORT).show()
     }
 
 }

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Background circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,10 C32.4,10 10,32.4 10,60 C10,87.6 32.4,110 60,110 C87.6,110 110,87.6 110,60 C110,32.4 87.6,10 60,10 Z" />
+    
+    <!-- Notification bell -->
+    <path
+        android:fillColor="#667eea"
+        android:pathData="M60,25 C52,25 45,32 45,40 L45,55 C45,60 42,65 38,67 L38,70 L82,70 L82,67 C78,65 75,60 75,55 L75,40 C75,32 68,25 60,25 Z" />
+    
+    <!-- Bell handle -->
+    <path
+        android:fillColor="#667eea"
+        android:pathData="M60,20 C58,20 56,22 56,24 L56,28 L64,28 L64,24 C64,22 62,20 60,20 Z" />
+    
+    <!-- Notification dots -->
+    <path
+        android:fillColor="#f093fb"
+        android:pathData="M75,29 C78.3,29 81,31.7 81,35 C81,38.3 78.3,41 75,41 C71.7,41 69,38.3 69,35 C69,31.7 71.7,29 75,29 Z" />
+    
+    <path
+        android:fillColor="#764ba2"
+        android:pathData="M85,46 C87.2,46 89,47.8 89,50 C89,52.2 87.2,54 85,54 C82.8,54 81,52.2 81,50 C81,47.8 82.8,46 85,46 Z" />
+    
+    <path
+        android:fillColor="#f093fb"
+        android:pathData="M80,62 C81.7,62 83,63.3 83,65 C83,66.7 81.7,68 80,68 C78.3,68 77,66.7 77,65 C77,63.3 78.3,62 80,62 Z" />
+    
+    <!-- Bell clapper -->
+    <path
+        android:fillColor="#667eea"
+        android:pathData="M55,75 C55,78 57,80 60,80 C63,80 65,78 65,75 L55,75 Z" />
+        
+</vector>

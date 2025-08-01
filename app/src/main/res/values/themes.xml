@@ -6,4 +6,10 @@
     </style>
 
     <style name="Theme.NotiTiddy" parent="Base.Theme.NotiTiddy" />
+    
+    <style name="Theme.NotiTiddy.Splash" parent="Theme.NotiTiddy">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+    </style>
 </resources>

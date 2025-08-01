@@ -228,11 +228,26 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
                 // Try to use the original notification's content intent first
                 if (notification.contentIntent != null) {
                     try {
-                        // Add timeout handling for PendingIntent
-                        notification.contentIntent.send(context, 0, null, null, null)
+                        // Add timeout handling for PendingIntent with callback
+                        notification.contentIntent.send(context, 0, null, object : PendingIntent.OnFinished {
+                            override fun onSendFinished(
+                                pendingIntent: PendingIntent?,
+                                intent: Intent?,
+                                resultCode: Int,
+                                resultData: String?,
+                                resultExtras: android.os.Bundle?
+                            ) {
+                                val message = when (resultCode) {
+                                    android.app.Activity.RESULT_OK -> "Successfully opened notification content"
+                                    android.app.Activity.RESULT_CANCELED -> "Operation was canceled - app may not support this action"
+                                    else -> "Failed to open content (code: $resultCode) - app may be uninstalled or disabled"
+                                }
+                                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                            }
+                        }, null)
                         
-                        // Show feedback that intent was sent
-                        Toast.makeText(context, "Opening notification content...", Toast.LENGTH_SHORT).show()
+                        // Show initial feedback
+                        Toast.makeText(context, "Attempting to open notification content...", Toast.LENGTH_SHORT).show()
                         return
                     } catch (e: PendingIntent.CanceledException) {
                         Toast.makeText(context, "Notification content expired, opening app instead", Toast.LENGTH_LONG).show()
