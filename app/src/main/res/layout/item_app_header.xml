@@ -1,23 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="16dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="2dp"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
-    android:background="@drawable/header_background"
-    android:elevation="2dp"
-    android:gravity="center_vertical">
+    android:background="#FFFFFF">
 
-    <ImageView
-        android:id="@+id/headerAppIconImageView"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginEnd="12dp"
-        android:contentDescription="App Icon" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:gravity="center_vertical">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp">
+
+        <ImageView
+            android:id="@+id/headerAppIconImageView"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="App Icon" />
+
+        <TextView
+            android:id="@+id/headerNotificationCountTextView"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="-2dp"
+            android:layout_marginEnd="-2dp"
+            android:background="@drawable/notification_count_bubble"
+            android:gravity="center"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:text="3" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -35,14 +57,6 @@
             android:text="App Name" />
 
         <TextView
-            android:id="@+id/headerNotificationCountTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="#666666"
-            android:text="3 notifications" />
-
-        <TextView
             android:id="@+id/headerTimestampTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -52,13 +66,15 @@
 
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/headerArrowImageView"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="8dp"
-        android:src="@android:drawable/arrow_down_float"
-        android:contentDescription="Expand/Collapse Arrow"
-        android:rotation="-90" />
 
-</LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="60dp"
+        android:background="#E0E0E0"
+        android:layout_gravity="bottom" />
+
+</FrameLayout>

@@ -13,7 +13,14 @@ class NotificationRepository(private val notificationDao: NotificationDao) {
     val activeNotifications: LiveData<List<NotificationItem>> = notificationDao.getActiveNotifications()
     
     suspend fun insert(notification: NotificationItem): Long {
-        return notificationDao.insert(notification)
+        return try {
+            val id = notificationDao.insert(notification)
+            android.util.Log.d("NotificationRepository", "Successfully inserted notification with ID: $id, package: ${notification.packageName}, title: ${notification.title}")
+            id
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationRepository", "Failed to insert notification: ${e.message}", e)
+            -1
+        }
     }
     
     suspend fun update(notification: NotificationItem) {

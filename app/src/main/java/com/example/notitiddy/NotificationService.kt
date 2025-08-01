@@ -71,17 +71,23 @@ class NotificationService : NotificationListenerService() {
         
         // Store notification in database
         serviceScope.launch {
-            val notificationItem = NotificationItem(
-                packageName = packageName,
-                appName = appName,
-                title = title,
-                content = text,
-                fullContent = fullContent,
-                postTime = sbn.postTime,
-                isRead = false,
-                isRemoved = false
-            )
-            repository.insert(notificationItem)
+            try {
+                val notificationItem = NotificationItem(
+                    packageName = packageName,
+                    appName = appName,
+                    title = title,
+                    content = text,
+                    fullContent = fullContent,
+                    postTime = sbn.postTime,
+                    isRead = false,
+                    isRemoved = false
+                )
+                Log.d(TAG, "About to insert notification: $packageName, $title")
+                val insertId = repository.insert(notificationItem)
+                Log.d(TAG, "Insert completed with ID: $insertId")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error inserting notification: ${e.message}", e)
+            }
         }
         
         // Broadcast notification posted event

@@ -24,8 +24,15 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.appcompat.app.ActionBarDrawerToggle
+import com.google.android.material.navigation.NavigationView
+import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.notitiddy.database.NotificationDatabase
+import com.example.notitiddy.repository.NotificationRepository
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, GroupedNotificationAdapter.OnItemClickListener {
     private lateinit var notificationsRecyclerView: RecyclerView
     private lateinit var notificationAdapter: GroupedNotificationAdapter
     private lateinit var headerLayout: LinearLayout
@@ -34,7 +41,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var backIcon: ImageView
     private lateinit var searchEditText: EditText
     private lateinit var clearSearchIcon: ImageView
+    private lateinit var menuIcon: ImageView
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
     private var isSearchVisible = false
+    private lateinit var repository: NotificationRepository
+    
+    private val detailActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // Refresh the notification data when returning from detail activity
+            loadNotificationsFromDatabase()
+            notificationAdapter.refreshData()
+        }
+    }
     
     private val notificationReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -53,13 +72,15 @@ class MainActivity : AppCompatActivity() {
                         fullContent
                     }
                     val notification = NotificationData(
+                        id = 0, // Will be set when saved to database
                         packageName = packageName,
                         appName = appName,
                         title = title,
                         content = shortContent,
                         fullContent = fullContent,
                         timestamp = System.currentTimeMillis(),
-                        contentIntent = contentIntent
+                        contentIntent = contentIntent,
+                        isRead = false // New notifications are unread
                     )
                     notificationAdapter.addNotification(notification)
                 }
@@ -88,9 +109,19 @@ class MainActivity : AppCompatActivity() {
         backIcon = findViewById(R.id.backIcon)
         searchEditText = findViewById(R.id.searchEditText)
         clearSearchIcon = findViewById(R.id.clearSearchIcon)
+        menuIcon = findViewById(R.id.menuIcon)
+        drawerLayout = findViewById(R.id.drawerLayout)
+        navigationView = findViewById(R.id.navigationView)
+        
+        // Set up navigation drawer
+        setupNavigationDrawer()
         
         // Set up search functionality
         setupSearchFunctionality()
+        
+        // Initialize repository
+        val database = NotificationDatabase.getDatabase(this)
+        repository = NotificationRepository(database.notificationDao())
         
         // Set up RecyclerView
         notificationAdapter = GroupedNotificationAdapter()
@@ -107,6 +138,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
         
+        // Set up click listener for notification items
+        notificationAdapter.setOnItemClickListener(this)
+        
+        // Load notifications from database
+        loadNotificationsFromDatabase()
+        
         // Add test notification for testing rendering effects
         addTestNotification()
         
@@ -118,7 +155,35 @@ class MainActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this).registerReceiver(notificationReceiver, intentFilter)
         
     }
-    
+
+    private fun setupNavigationDrawer() {
+        navigationView.setNavigationItemSelectedListener(this)
+        
+        // Set up hamburger menu click listener
+        menuIcon.setOnClickListener {
+            drawerLayout.openDrawer(navigationView)
+        }
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_notifications -> {
+                // Already on notifications screen
+                Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show()
+            }
+            R.id.nav_settings -> {
+                Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show()
+                // TODO: Navigate to settings screen
+            }
+            R.id.nav_about -> {
+                Toast.makeText(this, "About", Toast.LENGTH_SHORT).show()
+                // TODO: Show about dialog
+            }
+        }
+        drawerLayout.closeDrawer(navigationView)
+        return true
+    }
+
     private fun setupSearchFunctionality() {
         // Initially hide search bar
         searchBarLayout.visibility = View.GONE
@@ -152,7 +217,6 @@ class MainActivity : AppCompatActivity() {
     
     private fun showSearchBar() {
         isSearchVisible = true
-        headerLayout.visibility = View.GONE
         searchBarLayout.visibility = View.VISIBLE
         searchEditText.requestFocus()
     }
@@ -160,7 +224,6 @@ class MainActivity : AppCompatActivity() {
     private fun hideSearchBar() {
         isSearchVisible = false
         searchBarLayout.visibility = View.GONE
-        headerLayout.visibility = View.VISIBLE
         searchEditText.text.clear()
         // Reset filter to show all notifications
         notificationAdapter.filter("")
@@ -168,6 +231,31 @@ class MainActivity : AppCompatActivity() {
     
     private fun filterNotifications(query: String) {
         notificationAdapter.filter(query)
+    }
+    
+    private fun loadNotificationsFromDatabase() {
+        repository.allNotifications.observe(this) { notificationItems ->
+            android.util.Log.d("MainActivity", "Loaded ${notificationItems.size} notifications from database")
+            
+            // Clear existing notifications and add from database
+            notificationAdapter.clearNotifications()
+            
+            // Convert NotificationItem to NotificationData and add to adapter
+            notificationItems.forEach { item ->
+                val notificationData = NotificationData(
+                    id = item.id,
+                    packageName = item.packageName,
+                    appName = item.appName,
+                    title = item.title,
+                    content = item.content,
+                    fullContent = item.fullContent,
+                    timestamp = item.postTime,
+                    contentIntent = null, // NotificationItem doesn't store contentIntent
+                    isRead = item.isRead
+                )
+                notificationAdapter.addNotification(notificationData)
+            }
+        }
     }
     
     override fun onResume() {
@@ -298,5 +386,14 @@ class MainActivity : AppCompatActivity() {
         
         Toast.makeText(this, "Added ${testNotifications.size} test notifications from ${testNotifications.map { it.appName }.distinct().size} different apps", Toast.LENGTH_SHORT).show()
     }
+    
+    override fun onItemClick(packageName: String, appName: String) {
+         // Launch detail activity for the selected app
+         val intent = Intent(this, NotificationDetailActivity::class.java).apply {
+             putExtra("package_name", packageName)
+             putExtra("app_name", appName)
+         }
+         detailActivityLauncher.launch(intent)
+     }
 
 }
